@@ -81,7 +81,7 @@ resp = requests.get(req,auth=(user, password))
 
 for job in resp.json()['jobs'] :
     jobs.append(job['name'])
-#jobs.append("hadoop")
+#jobs.append("accumulo")
 
 def getBuild(x86_resp, job_name):
     all_builds = x86_resp['builds']
@@ -228,6 +228,7 @@ with tag('html'):
                             if action and action['_class'] == "hudson.plugins.git.util.BuildData" :
                                 revHash = action['lastBuiltRevision']['branch'][0]['SHA1']
                                 revName = action['lastBuiltRevision']['branch'][0]['name']
+                                build_date  = datetime.fromtimestamp(round(x86_lastBuild['timestamp'] / 1000)).strftime("%d-%m-%Y %H:%M UTC")  
                                 with tag('div', klass="bs-callout bs-callout-info"):
                                     with tag('div') :
                                         with tag('b'):
@@ -238,21 +239,25 @@ with tag('html'):
                                         with tag('b'):
                                             text('Last Revision: ')
                                         text('{0}'.format(revHash))
+                                    with tag('div') :
+                                        with tag('b'):
+                                            text('Last Run: ')
+                                        text('{0}'.format(build_date))
                                 break
                         with tag('table' ,width="100%" ,klass="table table-striped",style="font-size:13"):
                             with tag('thead'):
                                 #header
                                 with tag('tr'):
-                                    with tag('th'):
+                                    with tag('th', width="10%"):
                                         text('')
                                     with tag('th'):
                                         text('PPC UBUNTU16')
                                     with tag('th'):
-                                        text('x86 UBUNTU16')
+                                        text('X86 UBUNTU16')
                                     with tag('th'):
                                         text('PPC RHEL7')
                                     with tag('th'):
-                                        text('x86 RHEL7')
+                                        text('X86 RHEL7')
                                           
                               
                                 #summary
@@ -286,7 +291,7 @@ with tag('html'):
                                         text('Failures')
                                     for envDetail in environment:   
                                         with tag('td') :
-                                            with tag('ol'):
+                                            with tag('ol',style="padding-left: 1.0em"):
                                                 for t in envDetail['testErrorName'] :
                                                     with tag('div'):
                                                         with tag('li'):
@@ -298,7 +303,7 @@ with tag('html'):
                                         text('Description')
                                     for envDetail in environment:                                        
                                         with tag('td' ) :
-                                            with tag('ol'):
+                                            with tag('ol',style="padding-left: 1.0em"):
                                                 for t in envDetail['testErrorDesc'] :
                                                     with tag('div'):
                                                         with tag('li'):
@@ -310,34 +315,34 @@ with tag('html'):
                                     with tag('td', style="word-wrap: break-word;min-width: 160px;max-width: 220px;"):
                                         text('Unique Failures')
                                     with tag('td', style="word-wrap: break-word;min-width: 160px;max-width: 220px;"):
-                                        result = [x for x in ppcubuntu16summary['testErrorName'] if x not in x86ubuntu16summary['testErrorName'] and x not in x86rhel7summary['testErrorName']]
+                                        result = [x for x in ppcubuntu16summary['testErrorName'] if x not in x86ubuntu16summary['testErrorName']]
                                         ppcubuntu16summary['unique'] = len(result)
-                                        with tag('ol'):
+                                        with tag('ol',style="padding-left: 1.0em"):
                                             for t in result :
                                                 with tag('li'):
                                                     with tag('div'):
                                                         text(t)
                                     with tag('td', style="word-wrap: break-word;min-width: 160px;max-width: 220px;"):
-                                        result = [x for x in x86ubuntu16summary['testErrorName'] if x not in ppcubuntu16summary['testErrorName'] and x not in ppcrhel7summary['testErrorName']]
+                                        result = [x for x in x86ubuntu16summary['testErrorName'] if x not in ppcubuntu16summary['testErrorName']] 
                                         x86ubuntu16summary['unique'] = len(result)
-                                        with tag('ol'):
+                                        with tag('ol',style="padding-left: 1.0em"):
                                             for t in result :
                                                 with tag('li'):
                                                     with tag('div'):
                                                         text(t)                                                        
                                     with tag('td', style="word-wrap: break-word;min-width: 160px;max-width: 220px;"):
-                                        result = [x for x in ppcrhel7summary['testErrorName'] if x not in x86ubuntu16summary['testErrorName'] and x not in x86rhel7summary['testErrorName']]
+                                        result = [x for x in ppcrhel7summary['testErrorName'] if x not in x86rhel7summary['testErrorName']]
                                         ppcrhel7summary['unique'] = len(result)
-                                        with tag('ol'):
+                                        with tag('ol',style="padding-left: 1.0em"):
                                             for t in result :
                                                 with tag('li'):
                                                     with tag('div'):
                                                         text(t)
 
                                     with tag('td', style="word-wrap: break-word;min-width: 160px;max-width: 220px;"):
-                                        result = [x for x in x86rhel7summary['testErrorName'] if x not in ppcubuntu16summary['testErrorName'] and x not in ppcrhel7summary['testErrorName']]
+                                        result = [x for x in x86rhel7summary['testErrorName'] if x not in ppcrhel7summary['testErrorName']]
                                         x86rhel7summary['unique'] = len(result)
-                                        with tag('ol'):
+                                        with tag('ol',style="padding-left: 1.0em"):
                                             for t in result :
                                                 with tag('li'):
                                                     with tag('div'):
@@ -350,10 +355,8 @@ with tag('html'):
                 summary['x86rhel7'].append(x86rhel7summary)
              
             for key in summary:
-                if key == 'ppcubuntu16':
-                    disp = 'block'
-                else :
-                    disp = 'none'
+ 
+                disp = 'none'
                 with tag('div',  klass="panel panel-info" , id=key, name='summary', style="font-weight:bold;font-size:12;display:"+disp):
                     with tag('div', klass="panel-heading") :
                         with tag('div', klass="panel-title") :
@@ -385,7 +388,7 @@ with tag('html'):
                                     
                     
             #full summary
-            with tag('div', klass="panel panel-info" , id='ppcx86', name='summary', style="display:none;font-weight:bold"):
+            with tag('div', klass="panel panel-info" , id='ppcx86', name='summary', style="display:block;font-weight:bold"):
                 with tag('div', klass="panel-heading") :
                     with tag('div', klass="panel-title") :
                         text('FULL SUMMARY')
@@ -438,7 +441,7 @@ with tag('html'):
   
 result = doc.getvalue()
 print "Writing result to a file at /var/www/html/ci_report.html"
-with open('/root/ci-result.github.io/index.html','w') as afile :
+with open('/var/www/html/index.html','w') as afile :
     afile.write(result.encode('utf-8'))
     
 with open('/var/www/html/ci_report.html','w') as afile :
